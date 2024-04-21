@@ -1,0 +1,7 @@
+/.venv/
+.idea
+.idea/
+alembic/
+alembic
+/alembic.ini
+/users_database.db
