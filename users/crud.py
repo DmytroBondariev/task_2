@@ -4,6 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from users.models import UserDB, SexEnum
 from users.schemas import UserCreate
 
+from auth.hash_password import hash_password
+
 
 async def get_users_list(
         db_session: AsyncSession,
@@ -41,11 +43,12 @@ async def create_user(db_session: AsyncSession, user: UserCreate):
     Returns:
         dict: A dictionary representing the created user.
     """
+    hashed_password = hash_password(user.password)
     query = insert(UserDB).values(
         username=user.username,
         email=user.email,
         sex=user.sex.value,
-        password=user.password
+        password=hashed_password
     )
 
     result = await db_session.execute(query)
@@ -66,5 +69,22 @@ async def get_user_detail(db_session: AsyncSession, user_id: int):
         UserDB: An instance of UserDB representing the user, or None if no user with the given ID was found.
     """
     query = select(UserDB).where(UserDB.id == user_id)
+    result = await db_session.execute(query)
+    return result.scalar_one_or_none()
+
+
+async def get_user_by_username(db_session: AsyncSession, username: str):
+
+    """
+    Retrieves a user by their username.
+
+    Args:
+        db_session (AsyncSession): The database session to use for the query.
+        username (str): The username of the user to retrieve.
+
+    Returns:
+        UserDB: An instance of UserDB representing the user, or None if no user with the given username was found.
+    """
+    query = select(UserDB).where(UserDB.username == username)
     result = await db_session.execute(query)
     return result.scalar_one_or_none()

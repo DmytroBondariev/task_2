@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from auth.oauth2 import oauth2_schema
 from users.schemas import User, UserCreate
 from users import crud
 from dependencies import get_async_session
@@ -10,7 +11,7 @@ router = APIRouter()
 
 
 @router.get("/users/", response_model=list[User])
-async def get_all_users(db: AsyncSession = Depends(get_async_session)):
+async def get_all_users(db: AsyncSession = Depends(get_async_session), token: str = Depends(oauth2_schema)):
     """
     Retrieves a list of all users from the database.
 
@@ -19,6 +20,8 @@ async def get_all_users(db: AsyncSession = Depends(get_async_session)):
 
     Returns:
         list: A list of User instances representing the users.
+        :param db:
+        :param token:
     """
     return await crud.get_users_list(db_session=db)
 
